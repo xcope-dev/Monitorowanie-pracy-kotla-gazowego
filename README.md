@@ -24,7 +24,7 @@
 
 ## Instalacja
 
-1. Pobierz pobierz folder z plikiem wtyczki `boiler-counter.php`.
+1. Pobierz plik `boiler-counter.php` oraz `boiler-refresh-cron.php`.
 2. Zaloguj się do panelu WordPress jako administrator.
 3. Przejdź do sekcji **Wtyczki** → **Dodaj nową**.
 4. Kliknij **Prześlij wtyczkę**, wybierz plik i zainstaluj go.
