@@ -85,8 +85,9 @@ Ta wtyczka jest dostępna na licencji GPL-2.0.
 
 Poniżej znajduje się screen prezentujący frontend wtyczki:
 
-![Screen aplikacji](https://raw.githubusercontent.com/xcope-dev/Monitorowanie-pracy-kotla-gazowego/blob/ce5edbacbfb9eced0459836d1e144b8c49f2889b/app1.PNG)
+![Screen aplikacji](https://raw.githubusercontent.com/xcope-dev/Monitorowanie-pracy-kotla-gazowego/main/app1.PNG
+)
 
-![Screen aplikacji](https://raw.githubusercontent.com/xcope-dev/Monitorowanie-pracy-kotla-gazowego/blob/ce5edbacbfb9eced0459836d1e144b8c49f2889b/app2.PNG)
-
+![Screen aplikacji](https://raw.githubusercontent.com/xcope-dev/Monitorowanie-pracy-kotla-gazowego/main/app2.PNG
+)
 
