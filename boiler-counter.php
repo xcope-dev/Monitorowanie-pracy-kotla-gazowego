@@ -1,8 +1,8 @@
 <?php
 /*
 Plugin Name: Boiler Counter
-Description: Wtyczka do wyświetlania informacji o urządzeniu.
-Version: 1.4
+Description: Wtyczka do wyświetlania informacji o pracy kotla gazowego działa z modułami TechSterowniki.
+Version: 1.5
 Author: Xcope
 */
 
@@ -30,7 +30,7 @@ function boiler_counter_handle_device_update(WP_REST_Request $request) {
     $data = $request->get_json_params();
     
     // Walidacja danych (np. token, czy wszystko jest ok)
-    if (isset($data['module_id']) && $data['module_id'] == 'TU WPISZ ID MODULU') {
+    if (isset($data['module_id']) && $data['module_id'] == 'TU WPISZ ID MODULU STEROWNIKA') {
         // Aktualizuj dane w bazie danych
         update_option('boiler_counter_relay_on_count', $data['relay_on_count']);
         update_option('boiler_counter_history', $data['history']);
@@ -50,6 +50,7 @@ register_deactivation_hook(__FILE__, function () {
     }
 });
 
+// Jeżeli nie pamiętasz swoich danych do urządzeń użyj Postman i skorzystaj z dokumentacji API
 // Funkcja do aktualizacji danych urządzenia
 function boiler_counter_update_device_info() {
     $username = get_option('boiler_counter_username');
@@ -59,11 +60,10 @@ function boiler_counter_update_device_info() {
         echo "<p>Proszę skonfigurować dane logowania w ustawieniach wtyczki.</p>";
         return;
     }
-// Jeżeli nie pamiętasz swoich danych dotyczących modułów skorzystaj z dok. API i Postman
 
-    $module_id = 'TU WPISZ ID MODULU7';
-    $url = 'https://emodul.eu/api/v1/users/WPISZ ID/modules/' . $module_id . '/tiles';
-    $token = 'TWOJ TOKEN';
+    $module_id = 'TU WPISZ ID MODULU STEROWNIKA';
+    $url = 'https://emodul.eu/api/v1/users/TU WPISZ SWOJE ID/modules/' . $module_id . '/tiles';
+    $token = 'TU WPISZ TOKEN';
 
     $response = wp_remote_get($url, [
         'headers' => [
@@ -121,9 +121,7 @@ function boiler_counter_update_device_info() {
                     // Wyświetlenie temperatury
                     echo "<p><strong>Temperatura zewnętrzna:</strong> " . esc_html($formattedTemperature) . "°C</p>";
                 }
-                
-                
-                    
+                      
                 
                 echo "</div>";
             }
@@ -190,6 +188,13 @@ function boiler_counter_shortcode() {
 }
 add_shortcode('boiler_counter_info', 'boiler_counter_shortcode');
 
+function boiler_counter_add_query_vars($vars) {
+    $vars[] = 'paged';
+    return $vars;
+}
+add_filter('query_vars', 'boiler_counter_add_query_vars');
+
+
 // Funkcja do wyświetlania historii włączeń z paginacją i sortowaniem
 function boiler_counter_history_shortcode($atts) {
     $atts = shortcode_atts(
@@ -213,7 +218,8 @@ function boiler_counter_history_shortcode($atts) {
     $items_per_page = 20; // Liczba rekordów na stronę
     $total_items = count($history);
     $total_pages = ceil($total_items / $items_per_page);
-    $current_page = max(1, intval($atts['paged']));
+    $current_page = max(1, intval(get_query_var('paged', $atts['paged'])));
+
 
     $offset = ($current_page - 1) * $items_per_page;
     $paged_history = array_slice($history, $offset, $items_per_page);
@@ -291,14 +297,16 @@ function boiler_counter_history_shortcode($atts) {
     $output .= "</table>";
 
     // Dodanie paginacji
-    if ($total_pages > 1) {
-        $output .= "<div class='boiler-pagination'>";
-        for ($i = 1; $i <= $total_pages; $i++) {
-            $class = $i === $current_page ? 'current' : '';
-            $output .= "<a href='?paged=$i' class='$class'>$i</a>";
-        }
-        $output .= "</div>";
+if ($total_pages > 1) {
+    $output .= "<div class='boiler-pagination'>";
+    for ($i = 1; $i <= $total_pages; $i++) {
+        $current_url = add_query_arg('paged', $i);
+        $class = $i === $current_page ? 'current' : '';
+        $output .= "<a href='" . esc_url($current_url) . "' class='$class'>$i</a>";
     }
+    $output .= "</div>";
+}
+
 
     return $output;
 }
@@ -332,6 +340,24 @@ function boiler_counter_menu() {
 
 add_action('admin_menu', 'boiler_counter_menu');
 add_action('admin_init', 'boiler_counter_reset_handler');
+
+function my_plugin_download_button_shortcode() {
+    ob_start();
+    ?>
+    <button id="download-history" class="my-plugin-download-button">Pobierz historię</button>
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const button = document.getElementById('download-history');
+        button.addEventListener('click', function () {
+            window.location.href = '<?php echo admin_url('admin-ajax.php?action=download_history'); ?>';
+        });
+    });
+    </script>
+    <?php
+    return ob_get_clean();
+}
+add_shortcode('my_plugin_download_button', 'my_plugin_download_button_shortcode');
+
 
 // Strona resetowania licznika
 function boiler_counter_reset_page() {
@@ -418,6 +444,40 @@ function boiler_counter_ajax_update() {
         'info' => $device_info,
         'history' => $history
     ]);
+}
+
+add_action('wp_ajax_download_history', 'my_plugin_download_history');
+add_action('wp_ajax_nopriv_download_history', 'my_plugin_download_history');
+
+function my_plugin_download_history() {
+    // Pobierz dane historyczne zapisane w opcji
+    $history = get_option('boiler_counter_history', []);
+    
+    // Sprawdź, czy są dane do pobrania
+    if (empty($history)) {
+        wp_die('Brak danych do pobrania.');
+    }
+
+    // Przygotowanie pliku CSV
+    header('Content-Type: text/csv; charset=UTF-8');
+    header('Content-Disposition: attachment; filename="history.csv"');
+    $output = fopen('php://output', 'w');
+
+    // Dodanie nagłówków kolumn
+    fputcsv($output, ['Start Date', 'End Date', 'Count', 'Temperature']);
+
+    // Dodanie danych
+    foreach ($history as $entry) {
+        fputcsv($output, [
+            $entry['start_date'], 
+            $entry['end_date'] ?? 'Trwa', 
+            $entry['count'], 
+            $entry['temperature']
+        ]);
+    }
+
+    fclose($output);
+    exit;
 }
 
 // Skrypt JavaScript do automatycznego odświeżania
