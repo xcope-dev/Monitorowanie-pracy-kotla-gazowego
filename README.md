@@ -6,6 +6,7 @@
 
 - **Licznik załączeń i wyłączeń kotła** w danym dniu oraz godzinie.
 - **Przechowywanie danych historycznych** w bazie danych.
+- **Możliwość pobrania pliku danych historycznych** w bazie danych.
 - **Rejestrowanie temperatury zewnętrznej** w momencie pracy urządzenia.
 - Możliwość **resetowania okresu działania** i danych historycznych.
 - Obsługa autoryzacji za pomocą **tokenu i ID urządzenia**.
@@ -53,6 +54,7 @@ Dla pełnej funkcjonalności zainstaluj również wtyczkę **boiler-refresh-cron
 
 - **[boiler_counter_info]**: Wyświetla aktualne dane urządzenia, w tym liczbę załączeń oraz temperaturę.
 - **[boiler_counter_history]**: Wyświetla historię załączeń z paginacją i sortowaniem.
+- **[my_plugin_download_button]**: Tworzy przycisk i pobiera historię załączeń plik .csv.
 
 ## Ważne linki
 
@@ -62,6 +64,7 @@ Dla pełnej funkcjonalności zainstaluj również wtyczkę **boiler-refresh-cron
 ## Resetowanie danych
 
 W celu zresetowania licznika oraz danych historycznych:
+
 1. Przejdź do **Boiler Counter → Resetuj licznik**.
 2. Kliknij przycisk **Resetuj licznik**.
 
@@ -73,7 +76,6 @@ W celu zresetowania licznika oraz danych historycznych:
   - Bezprzewodowy moduł wykonawczy MW-1
   - Bezprzewodowy czujnik temperatury zewnętrznej C-8zr
 - Upewnij się, że Twój serwer obsługuje zewnętrzne wywołania CRON.
-
 
 ## Licencja
 
